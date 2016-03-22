@@ -27,7 +27,7 @@ Bullet.prototype.fire = function(x, y, angle, speed, gx, gy)
     this.reset(x, y);
     this.game.physics.arcade.velocityFromAngle(angle, speed, this.body.velocity);
 
-    this.angle = angle;
+    this.rotation = angle;
 
     this.body.gravity.set(gx, gy);
 };
@@ -55,7 +55,7 @@ Weapon.SingleBullet = function(game, owner)
         this.add(new Bullet(game, 'bullet5'), true);
     }
 
-    this.currentAperture = 270;
+    this.currentAperture = 0;
     
     return this;
 };
@@ -67,12 +67,13 @@ Weapon.SingleBullet.prototype.fire = function (source) {
 
     if (this.game.time.time < this.nextFire) { return; }
 
-    var x = source.x - 10;
-    var y = source.y + 10;
+    var x = source.x ;
+    var y = source.y ;
  
-    this.currentAperture = this.owner.currentAperture ;
+    this.currentAperture = this.game.math.radToDeg(this.owner.rotation);
     
-    this.getFirstExists(false).fire(x, y, this.currentAperture , this.bulletSpeed, 0, 0);
+    console.log("CURRENT APERTURE: " + this.currentAperture);
+    this.getFirstExists(false).fire(x, y, this.currentAperture, this.bulletSpeed, 0 , 0);
     
     this.nextFire = this.game.time.time + this.fireRate;
 };
@@ -113,7 +114,7 @@ Weapon.Laser.prototype.fire = function (source) {
     var x = source.x - 10;
     var y = source.y + 10;
     
-    this.currentAperture = this.owner.currentAperture;
+    this.currentAperture = this.owner.rotation;
     this.fireRate = 1600;
     b = this.getFirstExists(false);
     b.scale.setTo(5, 5);//.fire(x, y, this.currentAperture , this.bulletSpeed, 0, 0);
@@ -130,7 +131,7 @@ Weapon.Laser.prototype.fire = function (source) {
 Ship = function(game)
 {
     // GH: Phaser sprite call
-    Phaser.Sprite.call(this, game, game.world.centerX, game.world.centerY, 'ship_a');
+    Phaser.Sprite.call(this, game, game.world.centerX, game.world.centerY, 'ship');
     this.alive = true;
     this.health = 1;
     this.game = game;
@@ -174,7 +175,7 @@ Ship.prototype.update = function()
 
 Ship.prototype.checkAngleInput = function()
 {
-    this.currentAperture = this.game.math.angleBetween(this.body.x, this.body.y, this.game.input.activePointer.x, this.game.input.activePointer.y);  
+    this.rotation = this.game.math.angleBetween(this.body.x, this.body.y, this.game.input.activePointer.x, this.game.input.activePointer.y);  
 };
 // GH: Strafe.
 Ship.prototype.checkStrafe = function ()
@@ -244,7 +245,7 @@ BasicGame.Game.prototype = {
         // * SHOW_ALL
         // * RESIZE
         // See http://docs.phaser.io/Phaser.ScaleManager.html for full document
-        this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.scale.scaleMode = Phaser.ScaleManager.RESIZE;
         // If you wish to align your game in the middle of the page then you can
         // set this value to true. It will place a re-calculated margin-left
         // pixel value onto the canvas element which is updated on orientation /
@@ -255,7 +256,7 @@ BasicGame.Game.prototype = {
         // Force the orientation in landscape or portrait.
         // * Set first to true to force landscape. 
         // * Set second to true to force portrait.
-        this.scale.forceOrientation(true, false);
+        this.scale.forceOrientation(false, true);
         // Sets the callback that will be called when the window resize event
         // occurs, or if set the parent container changes dimensions. Use this 
         // to handle responsive game layout options. Note that the callback will
