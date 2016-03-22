@@ -10,6 +10,9 @@ Bullet = function(game, pngId)
     this.checkWorldBounds = true;
     this.outOfBoundsKill = true;
     this.exists = false;
+    //this.frame = 1; 
+ //   this.animations.add('idle',[0,1], 20, true);
+//    this.animations.play('idle');
 };
 
 Bullet.prototype = Object.create(Phaser.Sprite.prototype);
@@ -30,6 +33,8 @@ Bullet.prototype.fire = function(x, y, angle, speed, gx, gy)
     this.rotation = angle;
 
     this.body.gravity.set(gx, gy);
+    
+    
 };
 
 
@@ -45,18 +50,19 @@ Weapon.SingleBullet = function(game, owner)
     this.owner = owner;
     this.game = game;
     Phaser.Group.call(this, game, game.world, 'Single Bullet', false, true, Phaser.Physics.ARCADE);
-
     this.nextFire = 0;
     this.bulletSpeed = 600;
     this.fireRate = 100;
 
     for (var i = 0; i < 64; i++)
     {
-        this.add(new Bullet(game, 'bullet5'), true);
+        b = new Bullet(game, 'single_bullet');
+        this.add(b, true);
+      
     }
 
     this.currentAperture = 0;
-    
+    this.recoil = -120.2;
     return this;
 };
 
@@ -73,8 +79,9 @@ Weapon.SingleBullet.prototype.fire = function (source) {
     this.currentAperture = this.game.math.radToDeg(this.owner.rotation);
     
     console.log("CURRENT APERTURE: " + this.currentAperture);
-    this.getFirstExists(false).fire(x, y, this.currentAperture, this.bulletSpeed, 0 , 0);
-    
+    b = this.getFirstExists(false);
+    b.fire(x, y, this.currentAperture, this.bulletSpeed, 0 , 0);
+    b.rotation = this.owner.rotation;
     this.nextFire = this.game.time.time + this.fireRate;
 };
 
@@ -88,18 +95,17 @@ Weapon.Laser = function(game, owner)
     this.owner = owner;
     this.game = game;
     Phaser.Group.call(this, game, game.world, 'Laser', false, true, Phaser.Physics.ARCADE);
-
     this.nextFire = 0;
     this.bulletSpeed = 1000;
     this.fireRate = 45;
 
     for (var i = 0; i < 64; i++)
     {
-        this.add(new Bullet(game, 'bullet5'), true);
+        this.add(new Bullet(game, 'bullet_5'), true);
     }
 
     this.currentAperture = 270;
-    
+    this.recoil = 10;
     return this;
 };
 
@@ -145,15 +151,16 @@ Ship = function(game)
     this.currentAperture = 0 ;
     this.weapons = [];
     this.weapons.push( new Weapon.SingleBullet(game, this) );
-    this.weapons.push( new Weapon.Laser(game, this));
+    //this.weapons.push( new Weapon.Laser(game, this));
     this.currentWeapon = 0;
     
     // GH: switch weapon
-    this.aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
+ /*  this.aKey = game.input.keyboard.addKey(Phaser.Keyboard.A);
     this.dKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
     
     this.aKey.onDown.add(this.prevWeapon, this);
-    this.dKey.onDown.add(this.nextWeapon, this);
+    this.dKey.onDown.add(this.nextWeapon, this);*/
+    
     
 };
 
@@ -164,11 +171,15 @@ Ship.prototype.constructor = Ship;
 Ship.prototype.update = function()
 {
     this.checkAngleInput();
-    
+    this.body.drag = 10000;
+    this.body.angularDrag = 3000;
     // GH: Firing mah lazors
     if(this.game.input.keyboard.isDown(Phaser.Keyboard.Q))
     {
         this.weapons[this.currentWeapon].fire(this);
+        //this.body.velocity.x +=  this.weapons[this.currentWeapon].recoil * Math.cos(this.rotation);
+        //this.body.velocity.y +=  this.weapons[this.currentWeapon].recoil * Math.sin(-this.rotation);
+        this.game.physics.arcade.velocityFromRotation(this.rotation, this.weapons[this.currentWeapon].recoil, this.body.velocity);
     }
     this.checkStrafe();  
 };
@@ -276,6 +287,7 @@ BasicGame.Game.prototype = {
         // Here we load the assets required for our preloader (in this case a 
         // background and a loading bar)
         this.load.image('ship', 'asset/ship_a.png');
+        this.load.image('single_bullet', 'asset/bullet_single.png');
     },
 
     create: function () {
