@@ -33,8 +33,6 @@ Bullet.prototype.fire = function(x, y, angle, speed, gx, gy)
     this.rotation = angle;
 
     this.body.gravity.set(gx, gy);
-    
-    
 };
 
 
@@ -62,7 +60,7 @@ Weapon.SingleBullet = function(game, owner)
     }
 
     this.currentAperture = 0;
-    this.recoil = -120.2;
+    this.recoil = -320.2;
     return this;
 };
 
@@ -143,7 +141,7 @@ Ship = function(game)
     this.game = game;
     this.anchor.setTo(0.5, 0.5);
     game.physics.enable(this);
-    this.body.collideWorldBounds = true;
+    //this.body.collideWorldBounds = true;
     this.body.gravity.y = 0;
     // GH: Adding the object to the scene
     game.add.existing(this);
@@ -186,7 +184,7 @@ Ship.prototype.update = function()
 
 Ship.prototype.checkAngleInput = function()
 {
-    this.rotation = this.game.math.angleBetween(this.body.x, this.body.y, this.game.input.activePointer.x, this.game.input.activePointer.y);  
+    this.rotation = this.game.math.angleBetween(this.body.x, this.body.y, this.game.input.mousePointer.worldX, this.game.input.mousePointer.worldY);  
 };
 // GH: Strafe.
 Ship.prototype.checkStrafe = function ()
@@ -288,10 +286,17 @@ BasicGame.Game.prototype = {
         // background and a loading bar)
         this.load.image('ship', 'asset/ship_a.png');
         this.load.image('single_bullet', 'asset/bullet_single.png');
+        this.load.image('bkg', 'asset/starfield.jpg');
     },
 
     create: function () {
-       this.ship = new Ship(this);
+        this.game.world.setBounds(0, 0, 2048, 2048);
+        
+        this.game.add.sprite(0, 0, 'bkg');
+        this.ship = new Ship(this);
+        
+        
+        this.camera.follow(this.ship, Phaser.Camera.FOLLOW_LOCKON);
         
     },
 
